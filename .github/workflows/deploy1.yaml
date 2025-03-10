@@ -78,9 +78,15 @@ jobs:
       #    minikube service flask-app-service --url > minikube_url.txt
       #    cat minikube_url.txt
       
-      - name: Save Minikube Service URL
-        run: |
-          NODE_PORT=$(kubectl get svc flask-app-service -o=jsonpath='{.spec.ports[0].nodePort}')
-          MINIKUBE_IP=$(minikube ip)
-          echo "http://$MINIKUBE_IP:$NODE_PORT" > minikube_url.txt
-          cat minikube_url.txt
+      #- name: Save Minikube Service URL
+      #  run: |
+      #    NODE_PORT=$(kubectl get svc flask-app-service -o=jsonpath='{.spec.ports[0].nodePort}')
+      #    MINIKUBE_IP=$(minikube ip)
+      #    echo "http://$MINIKUBE_IP:$NODE_PORT" > minikube_url.txt
+      #    cat minikube_url.txt
+      
+      - name: Get Minikube Service URL
+        run: APP_URL=$(minikube service flask-app-service --url)
+
+      - name: Print Application URL
+        run: echo "Your application is running at: $APP_URL"
