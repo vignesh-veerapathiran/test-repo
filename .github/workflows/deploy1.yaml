@@ -86,7 +86,6 @@ jobs:
       #    cat minikube_url.txt
       
       - name: Get Minikube Service URL
-        run: APP_URL=$(minikube service flask-app-service --url)
-
-      - name: Print Application URL
-        run: echo "Your application is running at: $APP_URL"
+        run: |
+          APP_URL=$(minikube service flask-app-service --url)
+          echo $APP_URL
