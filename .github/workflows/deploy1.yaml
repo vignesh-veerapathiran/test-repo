@@ -77,3 +77,4 @@ jobs:
           NODE_PORT=$(kubectl get svc flask-app-service -o=jsonpath='{.spec.ports[0].nodePort}')
           MINIKUBE_IP=$(minikube ip)
           echo "http://$MINIKUBE_IP:$NODE_PORT" > minikube_url.txt
+          cat minikube_url.txt
