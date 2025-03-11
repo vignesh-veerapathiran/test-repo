@@ -103,7 +103,7 @@ jobs:
             sleep 5
           done
           EXTERNAL_IP=$(kubectl get svc flask-app-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-          echo "APP_URL=http://$EXTERNAL_IP" >> $GITHUB_ENV
+          echo "APP_URL=http://$EXTERNAL_IP:8080" >> $GITHUB_ENV
 
       - name: Test Service
         run: |
