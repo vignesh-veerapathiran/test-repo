@@ -85,10 +85,26 @@ jobs:
       #    echo "http://$MINIKUBE_IP:$NODE_PORT" > minikube_url.txt
       #    cat minikube_url.txt
       
-      - name: Get Minikube Service URL
-        run: |
-          export APP_URL=$(minikube service flask-app-service --url --format "{{.IP}}:{{.Port}}")
+      #- name: Get Minikube Service URL
+      #  run: |
+      #    export APP_URL=$(minikube service flask-app-service --url --format "{{.IP}}:{{.Port}}")
+      #    # Save URL to GitHub Actions Environment
+      #    echo "APP_URL=http://$APP_URL" >> $GITHUB_ENV
+      #    echo "Your app is running at: http://$APP_URL"
 
-          # Save URL to GitHub Actions Environment
-          echo "APP_URL=http://$APP_URL" >> $GITHUB_ENV
-          echo "Your app is running at: http://$APP_URL"
+      - name: Run Minikube Tunnel in Background
+        run: |
+          nohup minikube tunnel > /dev/null 2>&1 &
+
+      - name: Wait for External IP
+        run: |
+          echo "Waiting for LoadBalancer to get an external IP..."
+          while [ -z "$(kubectl get svc flask-app-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')" ]; do
+            sleep 5
+          done
+          EXTERNAL_IP=$(kubectl get svc flask-app-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "APP_URL=http://$EXTERNAL_IP" >> $GITHUB_ENV
+
+      - name: Test Service
+        run: |
+          curl -v "$APP_URL/health"
