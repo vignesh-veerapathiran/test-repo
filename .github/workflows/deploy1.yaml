@@ -87,5 +87,8 @@ jobs:
       
       - name: Get Minikube Service URL
         run: |
-          echo "APP_URL=$(minikube service flask-app-service --url)" >> $GITHUB_ENV
-          echo "Your app is running at: $APP_URL"
+          export APP_URL=$(minikube service flask-app-service --url --format "{{.IP}}:{{.Port}}")
+
+          # Save URL to GitHub Actions Environment
+          echo "APP_URL=http://$APP_URL" >> $GITHUB_ENV
+          echo "Your app is running at: http://$APP_URL"
