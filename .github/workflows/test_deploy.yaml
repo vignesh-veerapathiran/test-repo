@@ -27,7 +27,7 @@ jobs:
       - name: Run Tests & Generate Coverage Report
         run: |
           pytest --cov=app --cov-report=xml
-          mv coverage.xml ./coverage.xml
+          cp coverage.xml ./coverage.xml
 
   sonar:
     runs-on: ubuntu-latest
