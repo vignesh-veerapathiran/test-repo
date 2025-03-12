@@ -1,14 +1,12 @@
-name: Flask App CI/CD
+name: Code Test
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-      - develop
-      - feature/*
 
 jobs:
-  test:
+  unit-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -24,14 +22,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run Tests & Generate Coverage Report
+      - name: Run Unit Tests
         run: |
-          pytest --cov=app --cov-report=xml
-          cp -f coverage.xml ./coverage.xml || true
+          pytest test_app.py
 
   sonar:
     runs-on: self-hosted
-    needs: test  # Ensure you're using a self-hosted runner if needed
+    needs: unit-test  # Ensure you're using a self-hosted runner if needed
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
