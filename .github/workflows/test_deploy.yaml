@@ -30,13 +30,11 @@ jobs:
           cp -f coverage.xml ./coverage.xml || true
 
   sonar:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: test
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: "http://localhost:9000"
