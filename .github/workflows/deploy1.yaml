@@ -73,25 +73,6 @@ jobs:
       - name: Wait for Deployment to Be Ready
         run: kubectl rollout status deployment/flask-app
 
-      #- name: Get Minikube Service URL
-      #  run: |
-      #    minikube service flask-app-service --url > minikube_url.txt
-      #    cat minikube_url.txt
-      
-      #- name: Save Minikube Service URL
-      #  run: |
-      #    NODE_PORT=$(kubectl get svc flask-app-service -o=jsonpath='{.spec.ports[0].nodePort}')
-      #    MINIKUBE_IP=$(minikube ip)
-      #    echo "http://$MINIKUBE_IP:$NODE_PORT" > minikube_url.txt
-      #    cat minikube_url.txt
-      
-      #- name: Get Minikube Service URL
-      #  run: |
-      #    export APP_URL=$(minikube service flask-app-service --url --format "{{.IP}}:{{.Port}}")
-      #    # Save URL to GitHub Actions Environment
-      #    echo "APP_URL=http://$APP_URL" >> $GITHUB_ENV
-      #    echo "Your app is running at: http://$APP_URL"
-
       - name: Run Minikube Tunnel in Background
         run: |
           nohup minikube tunnel > /dev/null 2>&1 &
