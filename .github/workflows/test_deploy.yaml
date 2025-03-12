@@ -32,12 +32,26 @@ jobs:
   sonar:
     runs-on: self-hosted
     needs: test
+    sonar:
+    runs-on: self-hosted  # Ensure you're using a self-hosted runner if needed
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
+      - name: Set up Sonar Scanner
+        run: |
+          mkdir -p $RUNNER_TEMP/sonar-scanner
+          curl -o sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-7.0.2.4839-macosx-x64.zip
+          unzip -q sonar-scanner.zip -d $RUNNER_TEMP/sonar-scanner
+          echo "$RUNNER_TEMP/sonar-scanner/sonar-scanner-7.0.2.4839-macosx-x64/bin" >> $GITHUB_PATH
+
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@master
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=your_project_key \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=${SONAR_HOST_URL} \
+            -Dsonar.login=${SONAR_TOKEN}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: "http://localhost:9000"
