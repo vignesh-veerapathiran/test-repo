@@ -53,9 +53,12 @@ jobs:
       - name: Wait for Deployment to Be Ready
         run: kubectl rollout status deployment/flask-app
 
+      - name: Check screen installation
+        run: screen -ls || echo "Screen is not installed or not running"
+
       - name: Run Minikube Tunnel in Background #test
         run: |
-          screen -dmS minikube_tunnel bash -c "minikube tunnel"
+          sudo screen -dmS minikube_tunnel bash -c "minikube tunnel"
 
       - name: Wait for External IP
         run: |
