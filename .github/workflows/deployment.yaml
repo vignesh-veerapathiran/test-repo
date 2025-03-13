@@ -53,7 +53,7 @@ jobs:
       - name: Wait for Deployment to Be Ready
         run: kubectl rollout status deployment/flask-app
 
-      - name: Run Minikube Tunnel in Background #test
+      - name: Run Minikube Tunnel in Background
         run: |
           nohup bash -c "minikube tunnel" > minikube-tunnel.log 2>&1 &
           sleep 10
