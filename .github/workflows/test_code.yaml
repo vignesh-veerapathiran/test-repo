@@ -29,7 +29,7 @@ jobs:
 
   sonar:
     runs-on: self-hosted
-    needs: unit-test  # Ensure you're using a self-hosted runner if needed
+    needs: unit-test
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
