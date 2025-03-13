@@ -55,7 +55,7 @@ jobs:
 
       - name: Run Minikube Tunnel in Background
         run: |
-          nohup minikube tunnel > /dev/null 2>&1 &
+          tmux new-session -d -s minikube_tunnel 'minikube tunnel'
 
       - name: Wait for External IP
         run: |
