@@ -55,7 +55,9 @@ jobs:
 
       - name: Run Minikube Tunnel in Background #test
         run: |
-          nohup minikube tunnel > minikube-tunnel.log 2>&1 &
+          nohup bash -c "minikube tunnel" > minikube-tunnel.log 2>&1 &
+          sleep 10
+          ps aux | grep minikube
 
       - name: Wait for External IP
         run: |
