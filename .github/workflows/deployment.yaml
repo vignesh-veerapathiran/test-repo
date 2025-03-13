@@ -55,11 +55,7 @@ jobs:
 
       - name: Run Minikube Tunnel in Background #test
         run: |
-          tmux new-session -d -s minikube_tunnel 'minikube tunnel'
-          sleep 5
-          tmux list-sessions
-          ps aux | grep minikube
-          netstat -an | grep LISTEN
+          screen -dmS minikube_tunnel bash -c "minikube tunnel"
 
       - name: Wait for External IP
         run: |
