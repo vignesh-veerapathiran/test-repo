@@ -55,7 +55,7 @@ jobs:
 
       - name: Run Minikube Tunnel in Background
         run: |
-          nohup sudo minikube tunnel > /dev/null 2>&1 &
+          nohup minikube tunnel > /dev/null 2>&1 &
 
       - name: Wait for External IP
         run: |
