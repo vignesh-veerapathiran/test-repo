@@ -53,7 +53,7 @@ jobs:
       - name: Wait for Deployment to Be Ready
         run: kubectl rollout status deployment/flask-app
 
-      - name: Run Minikube Tunnel in Background
+      - name: Run Minikube Tunnel in Background #test
         run: |
           tmux new-session -d -s minikube_tunnel 'minikube tunnel'
           sleep 5
