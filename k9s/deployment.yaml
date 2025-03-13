@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: vignesh333/my_docker_image:flask_ee1
+        image: ${{ secrets.DOCKER_USERNAME }}/my_docker_image:flask_ee1
         ports:
         - containerPort: 8080
         resources:
