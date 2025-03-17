@@ -114,7 +114,7 @@ jobs:
         run: |
           sleep 10  # Wait for Ingress resources to be created
           for i in {1..20}; do
-            INGRESS_HOST=$(kubectl get ingress flask-app-ingress -n test-flask -o jsonpath='{.spec.rules[0].host}' 2>/dev/null)
+            INGRESS_HOST=$(kubectl get ingress test-api-ingress -n test-flask -o jsonpath='{.spec.rules[0].host}' 2>/dev/null)
             if [[ -n "$INGRESS_HOST" ]]; then
               echo "APP_URL=http://$INGRESS_HOST" >> $GITHUB_ENV
               exit 0
