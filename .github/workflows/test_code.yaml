@@ -25,7 +25,7 @@ jobs:
       - name: Run Unit Tests
         run: |
           pytest --cov=app --cov-report=xml
-          cp -f coverage.xml ./coverage.xml || true
+          cp -f app/coverage.xml ./coverage.xml || true
 
   sonar:
     runs-on: self-hosted
