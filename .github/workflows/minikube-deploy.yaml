@@ -1,0 +1,91 @@
+name: CD - Deploy to Minikube
+
+on:
+  workflow_dispatch:
+    inputs:
+      DEPLOY_ENV:
+        description: "Select environment (dev, staging, production)"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+jobs:
+  deploy-to-minikube:
+    runs-on: self-hosted  # Runs on local machine
+    env:
+      ENV_NAME: ${{ github.event.inputs.DEPLOY_ENV }}
+      REPO_PATH: "/Users/vigneshv/Documents/demo_git/test-repo"
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Ensure Minikube is Running
+        run: |
+          minikube status | grep -q 'Running' || minikube start --driver=hyperkit
+          minikube addons enable ingress || true
+
+      - name: Pull Latest Docker Image
+        run: |
+          IMAGE_TAG=$(curl -s https://hub.docker.com/v2/repositories/${{ secrets.DOCKER_USERNAME }}/my_docker_image/tags | jq -r '.results[0].name')
+          echo "Using latest image: $IMAGE_TAG"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/my_docker_image:$IMAGE_TAG
+
+      - name: Set Deployment Path
+        run: echo "K8S_PATH=$REPO_PATH/k9s/$ENV_NAME" >> $GITHUB_ENV
+
+      - name: Deploy to Kubernetes
+        run: |
+          echo "Deploying to environment: $ENV_NAME"
+          
+          cat <<EOF > $K8S_PATH/kustomization.yaml
+          apiVersion: kustomize.config.k8s.io/v1beta1
+          kind: Kustomization
+          resources:
+            - deployment.yaml
+            - ingress.yaml
+            - service.yaml
+          images:
+            - name: IMAGE_PLACEHOLDER
+              newName: ${{ secrets.DOCKER_USERNAME }}/my_docker_image
+              newTag: $IMAGE_TAG
+          EOF
+          
+        env:
+          K8S_PATH: ${{ env.K8S_PATH }}
+
+      - name: Apply Kubernetes Manifests
+        run: |
+          kubectl get ns $ENV_NAME || kubectl create ns $ENV_NAME
+
+          while ! kubectl get ns $ENV_NAME >/dev/null 2>&1; do
+            echo "Waiting for namespace $ENV_NAME to be available..."
+            sleep 3
+          done
+
+          kubectl kustomize ${{ env.K8S_PATH }} | kubectl apply -f -
+          rm -f ${{ env.K8S_PATH }}/kustomization.yaml
+        env:
+          K8S_PATH: ${{ env.K8S_PATH }}
+
+      - name: Wait for Deployment & Ingress
+        run: |
+          kubectl rollout status deployment/flask-app -n $ENV_NAME
+          sleep 10
+          for i in {1..20}; do
+            INGRESS_HOST=$(kubectl get ingress $ENV_NAME-api-ingress -n $ENV_NAME -o jsonpath='{.spec.rules[0].host}' 2>/dev/null)
+            echo "Attempt $i: Found Ingress Host: $INGRESS_HOST"
+            if [[ -n "$INGRESS_HOST" ]]; then
+              echo "APP_URL=http://$INGRESS_HOST" >> $GITHUB_ENV
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Error: Ingress did not get a host" && exit 1
+
+      - name: Test Service via Ingress
+        run: curl -v "$APP_URL/health"
