@@ -69,7 +69,7 @@ jobs:
       - name: Deploy to Kubernetes
         run: |
           echo "Deploying to environment: $ENV_NAME"
-          K8S_PATH=$REPO_PATH/k9s/$ENV_NAME
+          K8S_PATH=$REPO_PATH/k9s/$ENV_NAME >> $GITHUB_ENV
           
           cat <<EOF > $K8S_PATH/kustomization.yaml
           apiVersion: kustomize.config.k8s.io/v1beta1
@@ -93,10 +93,10 @@ jobs:
             sleep 3
           done
 
-          kubectl kustomize $K8S_PATH | kubectl apply -f -
+          kubectl kustomize ${{ env.K8S_PATH }} | kubectl apply -f -
 
       - name: Cleanup kustomization.yaml
-        run: rm -f $K8S_PATH/kustomization.yaml
+        run: rm -f ${{ env.K8S_PATH }}/kustomization.yaml
 
       - name: Wait for Deployment & Ingress
         run: |
