@@ -1,10 +1,7 @@
 name: Deploy to Local Minikube
 
 on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:  # Manual trigger with environment input
+  workflow_dispatch:
     inputs:
       DEPLOY_ENV:
         description: "Select environment (dev, staging, production)"
@@ -87,9 +84,13 @@ jobs:
               newTag: $IMAGE_TAG
           EOF
 
-          kubectl get ns $ENV_NAME || kubectl create ns $ENV_NAME || true
+      - name: Apply Kubernetes Manifests #test
+        run: |
+          kubectl get ns $ENV_NAME || kubectl create ns $ENV_NAME
           kubectl kustomize $K8S_PATH | kubectl apply -f -
-          rm -f $K8S_PATH/kustomization.yaml  # Cleanup
+
+      - name: Cleanup kustomization.yaml
+        run: rm -f $K8S_PATH/kustomization.yaml
 
       - name: Wait for Deployment & Ingress
         run: |
