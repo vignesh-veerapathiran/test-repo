@@ -89,6 +89,8 @@ jobs:
           kind: Kustomization
           resources:
             - deployment.yaml
+            - ingress.yaml
+            - service.yaml
           images:
             - name: IMAGE_PLACEHOLDER
               newName: ${{ secrets.DOCKER_USERNAME }}/my_docker_image
