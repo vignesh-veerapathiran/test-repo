@@ -39,7 +39,7 @@ jobs:
             echo "Minikube is already running."
           else
             echo "Starting Minikube..."
-            minikube start --driver=heperkit
+            minikube start --driver=hyperkit
           fi
 
       - name: Enable Minikube Ingress Addon (if not enabled)
