@@ -78,10 +78,6 @@ jobs:
       - name: Pull Docker Image into Minikube
         run: minikube image pull ${{ secrets.DOCKER_USERNAME }}/my_docker_image:$IMAGE_TAG
 
-#      - name: Replace Image Placeholder in Deployment YAML
-#        run: |
-#          sed -i '' 's|IMAGE_PLACEHOLDER|${{ secrets.DOCKER_USERNAME }}/my_docker_image:$IMAGE_TAG|g' "/Users/vigneshv/Documents/demo_git/test-repo/k9s/deployment.yaml"
-
       - name: Generate kustomization.yaml
         run: |
           cat <<EOF > /Users/vigneshv/Documents/demo_git/test-repo/k9s/kustomization.yaml
@@ -101,6 +97,9 @@ jobs:
         run: |
           kubectl get ns test-flask || kubectl create ns test-flask
           kubectl kustomize /Users/vigneshv/Documents/demo_git/test-repo/k9s/ | kubectl apply -f -
+
+      - name: Cleanup kustomization.yaml
+        run: rm -f /Users/vigneshv/Documents/demo_git/test-repo/k9s/kustomization.yaml
 
 #      - name: Apply Kubernetes Manifests
 #        run: |
