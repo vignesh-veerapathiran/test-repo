@@ -25,7 +25,15 @@ jobs:
 
       - name: Get Timestamp
         id: timestamp
-        run: echo "IMAGE_TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+        run: |
+          echo "IMAGE_TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+          echo "::set-output name=image_tag::$TIMESTAMP"
+          echo "Generated IMAGE_TAG: $TIMESTAMP"
+
+      - name: Debug IMAGE_TAG
+        run: |
+          echo "IMAGE_TAG (env): $IMAGE_TAG"
+          echo "IMAGE_TAG (output): ${{ steps.timestamp.outputs.image_tag }}"
 
       - name: Build & Push Docker Image
         uses: docker/build-push-action@v4
