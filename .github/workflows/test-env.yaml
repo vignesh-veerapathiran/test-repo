@@ -52,8 +52,9 @@ jobs:
       - name: Pull Docker Image into Minikube
         run: minikube image pull ${{ secrets.DOCKER_USERNAME }}/my_docker_image:$IMAGE_TAG
 
-      - name: Deploy to Kubernetes (Environment: ${{ env.ENV_NAME }})
+      - name: Deploy to Kubernetes
         run: |
+          echo "Deploying to environment: $ENV_NAME"
           K8S_PATH=$REPO_PATH/k9s/$ENV_NAME
           
           cat <<EOF > $K8S_PATH/kustomization.yaml
