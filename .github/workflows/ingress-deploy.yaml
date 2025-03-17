@@ -59,10 +59,10 @@ jobs:
 
       - name: Verify IMAGE_TAG
         run: |
-          echo "Using image tag: $IMAGE_TAG"
+          echo "Using image tag: ${{ env.IMAGE_TAG }}"
 
       - name: Pull Docker Image into Minikube
-        run: minikube image pull ${{ secrets.DOCKER_USERNAME }}/my_docker_image:$IMAGE_TAG
+        run: minikube image pull ${{ secrets.DOCKER_USERNAME }}/my_docker_image:${{ env.IMAGE_TAG }}
 
 #      - name: Replace Image Placeholder in Deployment YAML
 #        run: |
