@@ -66,10 +66,12 @@ jobs:
       - name: Load Docker Image into Minikube
         run: minikube image load ${{ secrets.DOCKER_USERNAME }}/my_docker_image:$IMAGE_TAG
 
+      - name: Set Deployment Path
+        run: echo "K8S_PATH=$REPO_PATH/k9s/$ENV_NAME" >> $GITHUB_ENV
+
       - name: Deploy to Kubernetes
         run: |
           echo "Deploying to environment: $ENV_NAME"
-          K8S_PATH=$REPO_PATH/k9s/$ENV_NAME >> $GITHUB_ENV
           
           cat <<EOF > $K8S_PATH/kustomization.yaml
           apiVersion: kustomize.config.k8s.io/v1beta1
@@ -83,6 +85,9 @@ jobs:
               newName: ${{ secrets.DOCKER_USERNAME }}/my_docker_image
               newTag: $IMAGE_TAG
           EOF
+          
+        env:
+          K8S_PATH: ${{ env.K8S_PATH }}
 
       - name: Apply Kubernetes Manifests #test
         run: |
