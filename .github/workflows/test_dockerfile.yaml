@@ -19,7 +19,7 @@ jobs:
           chmod +x /usr/local/bin/hadolint
 
       - name: Run Hadolint on Dockerfile
-        run: hadolint Dockerfile
+        run: hadolint app/Dockerfile
 
 
   security-scan:
