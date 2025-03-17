@@ -3,7 +3,9 @@ name: Code Test
 on:
   pull_request: #test_pr
     branches:
-      - test
+      - main
+    paths:
+      - 'app/**'
 
 jobs:
   unit-test:
