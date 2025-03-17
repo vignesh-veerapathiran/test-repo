@@ -1,8 +1,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: dev-api-ingress #tests
-  namespace: test-flask
+  name: dev-api-ingress
+  namespace: dev
 spec:
   rules:
   - host: dev.api.local

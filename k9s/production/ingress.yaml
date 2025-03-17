@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: prod-api-ingress
-  namespace: production-app
+  namespace: production
 spec:
   rules:
   - host: prod.api.locals

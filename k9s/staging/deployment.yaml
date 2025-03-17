@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: flask-app
-  namespace: staging-app
+  namespace: staging
 spec:
   replicas: 1
   selector:
