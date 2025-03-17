@@ -1,0 +1,37 @@
+name: Tag on Merge
+
+on:
+  push:
+    branches:
+      - main  # Change to the branch where you want auto-tagging
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Latest Tag
+        id: get_tag
+        run: echo "LATEST_TAG=$(git describe --tags --abbrev=0 || echo 'v0.0.0')" >> $GITHUB_ENV
+
+      - name: Generate New Tag
+        id: new_tag
+        run: |
+          LATEST_TAG=${{ env.LATEST_TAG }}
+          IFS='.' read -r -a TAG_PARTS <<< "${LATEST_TAG#v}"
+          MAJOR=${TAG_PARTS[0]}
+          MINOR=${TAG_PARTS[1]}
+          PATCH=$((TAG_PARTS[2] + 1))
+          NEW_TAG="v$MAJOR.$MINOR.$PATCH"
+          echo "NEW_TAG=$NEW_TAG" >> $GITHUB_ENV
+
+      - name: Create and Push Tag
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git tag ${{ env.NEW_TAG }}
+          git push origin ${{ env.NEW_TAG }}
