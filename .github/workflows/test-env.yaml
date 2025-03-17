@@ -1,6 +1,9 @@
 name: Deploy to Local Minikube
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:  # Manual trigger with environment input
     inputs:
       DEPLOY_ENV:
