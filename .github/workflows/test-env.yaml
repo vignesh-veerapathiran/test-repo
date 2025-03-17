@@ -96,7 +96,7 @@ jobs:
           kubectl kustomize ${{ env.K8S_PATH }} | kubectl apply -f -
           rm -f ${{ env.K8S_PATH }}/kustomization.yaml
         env:
-          K8S_PATH = ${{ env.K8S_PATH }}
+          K8S_PATH: ${{ env.K8S_PATH }}
 
       - name: Wait for Deployment & Ingress
         run: |
