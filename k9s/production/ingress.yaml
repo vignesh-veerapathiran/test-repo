@@ -5,7 +5,7 @@ metadata:
   namespace: production
 spec:
   rules:
-  - host: production.api.locals
+  - host: production.api.local
     http:
       paths:
       - path: /
