@@ -38,8 +38,6 @@ jobs:
   deploy-to-minikube:
     runs-on: self-hosted  # Runs on local machine
     needs: build-and-push
-    env:
-      IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
     steps:
       - name: Check if Minikube is Running
         run: |
@@ -58,6 +56,9 @@ jobs:
             echo "Enabling Ingress addon..."
             minikube addons enable ingress
           fi
+
+      - name: Set IMAGE_TAG
+        run: echo "IMAGE_TAG=${{ needs.build-and-push.outputs.image_tag }}" >> $GITHUB_ENV
 
       - name: Verify IMAGE_TAG
         run: |
