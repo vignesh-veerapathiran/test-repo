@@ -39,7 +39,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: "fs"
-          scan-ref: "."
+          scan-ref: "app/"
           ignore-unfixed: true
           severity: "MEDIUM,HIGH,CRITICAL"
 
@@ -47,6 +47,6 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: "config"
-          scan-ref: "Dockerfile"
+          scan-ref: "app/Dockerfile"
           ignore-unfixed: true
           severity: "MEDIUM,HIGH,CRITICAL"
