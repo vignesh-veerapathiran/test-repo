@@ -3,7 +3,7 @@ name: Deploy to Local Minikube
 on:
   push:
     branches:
-      - test
+      - main
 
 jobs:
   build-and-push:
@@ -39,7 +39,16 @@ jobs:
             echo "Minikube is already running."
           else
             echo "Starting Minikube..."
-            minikube start --driver=docker
+            minikube start --driver=heperkit
+          fi
+
+      - name: Enable Minikube Ingress Addon (if not enabled)
+        run: |
+          if minikube addons list | grep -E "^\| ingress[[:space:]]+\|" | grep "enabled"; then
+            echo "Ingress addon is already enabled."
+          else
+            echo "Enabling Ingress addon..."
+            minikube addons enable ingress
           fi
 
       - name: Pull Docker Image into Minikube
@@ -50,30 +59,25 @@ jobs:
           kubectl get ns test-flask || kubectl create ns test-flask
           kubectl apply -f /Users/vigneshv/Documents/demo_git/test-repo/k9s/deployment.yaml
           kubectl apply -f /Users/vigneshv/Documents/demo_git/test-repo/k9s/service.yaml
+          kubectl apply -f /Users/vigneshv/Documents/demo_git/test-repo/k9s/ingress.yaml
 
       - name: Wait for Deployment to Be Ready
         run: kubectl rollout status deployment/flask-app
 
-      - name: Run Minikube Tunnel in Background
+      - name: Wait for Ingress to be Ready
         run: |
-          nohup bash -c "minikube tunnel" > minikube-tunnel.log 2>&1 &
-          sleep 10
-          ps aux | grep minikube
-
-      - name: Wait for External IP
-        run: |
-          echo "Waiting for LoadBalancer to get an external IP..."
+          sleep 10  # Wait for Ingress resources to be created
           for i in {1..20}; do
-            EXTERNAL_IP=$(kubectl get svc flask-app-service -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
-            if [[ -n "$EXTERNAL_IP" ]]; then
-              echo "APP_URL=http://$EXTERNAL_IP:8080" >> $GITHUB_ENV
+            INGRESS_HOST=$(kubectl get ingress flask-app-ingress -n test-flask -o jsonpath='{.spec.rules[0].host}' 2>/dev/null)
+            if [[ -n "$INGRESS_HOST" ]]; then
+              echo "APP_URL=http://$INGRESS_HOST" >> $GITHUB_ENV
               exit 0
             fi
             sleep 5
           done
-          echo "Error: LoadBalancer did not get an external IP"
+          echo "Error: Ingress did not get a host"
           exit 1
 
-      - name: Test Service
+      - name: Test Service via Ingress
         run: |
           curl -v "$APP_URL/health"
