@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: prod-api-ingress
+  namespace: production-app
+spec:
+  rules:
+  - host: prod.api.locals
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: prod-app-service
+            port:
+              number: 80

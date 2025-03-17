@@ -1,17 +1,17 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: test-api-ingress #test
-  namespace: test-flask
+  name: staging-api-ingress
+  namespace: staging-app
 spec:
   rules:
-  - host: test.api.local
+  - host: staging.api.local
     http:
       paths:
       - path: /
         pathType: Prefix
         backend:
           service:
-            name: flask-app-service
+            name: staging-app-service
             port:
               number: 80

@@ -1,0 +1,17 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dev-api-ingress #tests
+  namespace: test-flask
+spec:
+  rules:
+  - host: dev.api.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dev-app-service
+            port:
+              number: 80
