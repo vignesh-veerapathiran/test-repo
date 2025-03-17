@@ -27,7 +27,7 @@ def test_pagination(client):
     assert response.json['per_page'] == 3
 
 def test_clear_all_cache(client):
-    # First make a request to cache some data
+    # First make a request to cache some data 
     client.get('/octocat')
     
     # Clear all cache
