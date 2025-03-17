@@ -8,6 +8,8 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.timestamp.outputs.image_tag }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -37,7 +39,7 @@ jobs:
     runs-on: self-hosted  # Runs on local machine
     needs: build-and-push
     env:
-      IMAGE_TAG: ${{ needs.build-and-push.outputs.IMAGE_TAG }}
+      IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
     steps:
       - name: Check if Minikube is Running
         run: |
@@ -59,10 +61,10 @@ jobs:
 
       - name: Verify IMAGE_TAG
         run: |
-          echo "Using image tag: ${{ env.IMAGE_TAG }}"
+          echo "Using image tag: $IMAGE_TAG"
 
       - name: Pull Docker Image into Minikube
-        run: minikube image pull ${{ secrets.DOCKER_USERNAME }}/my_docker_image:${{ env.IMAGE_TAG }}
+        run: minikube image pull ${{ secrets.DOCKER_USERNAME }}/my_docker_image:$IMAGE_TAG
 
 #      - name: Replace Image Placeholder in Deployment YAML
 #        run: |
