@@ -95,7 +95,7 @@ jobs:
               newTag: $IMAGE_TAG
           EOF
 
-      - name: Apply Kubernetes Manifests
+      - name: Apply Kubernetes Manifests #test
         run: |
           kubectl get ns test-flask || kubectl create ns test-flask
           kubectl kustomize /Users/vigneshv/Documents/demo_git/test-repo/k9s/ | kubectl apply -f -
