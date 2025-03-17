@@ -78,7 +78,7 @@ jobs:
       - name: Apply Kubernetes Manifests
         run: |
           kubectl get ns test-flask || kubectl create ns test-flask
-          kubectl apply -f /Users/vigneshv/Documents/demo_git/test-repo/k9s/
+          kubectl kustomize /Users/vigneshv/Documents/demo_git/test-repo/k9s/ | kubectl apply -f -
 
 #      - name: Apply Kubernetes Manifests
 #        run: |
