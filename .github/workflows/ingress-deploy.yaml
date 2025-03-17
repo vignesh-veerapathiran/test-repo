@@ -108,7 +108,7 @@ jobs:
 #          kubectl apply -f /Users/vigneshv/Documents/demo_git/test-repo/k9s/ingress.yaml
 
       - name: Wait for Deployment to Be Ready
-        run: kubectl rollout status deployment/flask-app
+        run: kubectl rollout status deployment/flask-app -n test-flask
 
       - name: Wait for Ingress to be Ready
         run: |
