@@ -87,6 +87,12 @@ jobs:
       - name: Apply Kubernetes Manifests #test
         run: |
           kubectl get ns $ENV_NAME || kubectl create ns $ENV_NAME
+
+          while ! kubectl get ns $ENV_NAME >/dev/null 2>&1; do
+            echo "Waiting for namespace $ENV_NAME to be available..."
+            sleep 3
+          done
+
           kubectl kustomize $K8S_PATH | kubectl apply -f -
 
       - name: Cleanup kustomization.yaml
