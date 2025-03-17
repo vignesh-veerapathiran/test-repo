@@ -1,0 +1,92 @@
+name: Deploy to Local Minikube
+
+on:
+  workflow_dispatch:  # Manual trigger with environment input
+    inputs:
+      DEPLOY_ENV:
+        description: "Select environment (dev, staging, production)"
+        required: true
+        default: "dev"
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ env.IMAGE_TAG }}
+      env_name: ${{ github.event.inputs.DEPLOY_ENV }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Environment
+        run: echo "ENV_NAME=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
+
+      - name: Get Timestamp for Image Tag
+        run: echo "IMAGE_TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
+
+      - name: Build & Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: app/
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/my_docker_image:${{ env.IMAGE_TAG }}
+
+  deploy-to-minikube:
+    runs-on: self-hosted  # Runs on local machine
+    needs: build-and-push
+    env:
+      IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
+      ENV_NAME: ${{ needs.build-and-push.outputs.env_name }}
+      REPO_PATH: "/Users/vigneshv/Documents/demo_git/test-repo"
+    steps:
+      - name: Ensure Minikube is Running
+        run: |
+          minikube status | grep -q 'Running' || minikube start --driver=hyperkit
+          minikube addons enable ingress || true
+
+      - name: Pull Docker Image into Minikube
+        run: minikube image pull ${{ secrets.DOCKER_USERNAME }}/my_docker_image:$IMAGE_TAG
+
+      - name: Deploy to Kubernetes
+        run: |
+          echo "Deploying to environment: $ENV_NAME"
+          K8S_PATH=$REPO_PATH/k9s/$ENV_NAME
+          
+          cat <<EOF > $K8S_PATH/kustomization.yaml
+          apiVersion: kustomize.config.k8s.io/v1beta1
+          kind: Kustomization
+          resources:
+            - deployment.yaml
+            - ingress.yaml
+            - service.yaml
+          images:
+            - name: IMAGE_PLACEHOLDER
+              newName: ${{ secrets.DOCKER_USERNAME }}/my_docker_image
+              newTag: $IMAGE_TAG
+          EOF
+
+          kubectl get ns $ENV_NAME || kubectl create ns $ENV_NAME
+          kubectl kustomize $K8S_PATH | kubectl apply -f -
+          rm -f $K8S_PATH/kustomization.yaml  # Cleanup
+
+      - name: Wait for Deployment & Ingress
+        run: |
+          kubectl rollout status deployment/flask-app -n $ENV_NAME
+          sleep 10
+          for i in {1..20}; do
+            INGRESS_HOST=$(kubectl get ingress $ENV_NAME-api-ingress -n $ENV_NAME -o jsonpath='{.spec.rules[0].host}' 2>/dev/null)
+            if [[ -n "$INGRESS_HOST" ]]; then
+              echo "APP_URL=http://$INGRESS_HOST" >> $GITHUB_ENV
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Error: Ingress did not get a host" && exit 1
+
+      - name: Test Service via Ingress
+        run: curl -v "$APP_URL/health"

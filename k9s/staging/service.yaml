@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: flask-app-service
+  name: staging-app-service
   namespace: test-flask
 spec:
   selector:
