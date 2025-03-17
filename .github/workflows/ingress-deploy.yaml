@@ -9,7 +9,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     outputs:
-      image_tag: ${{ steps.timestamp.outputs.image_tag }}
+      image_tag: ${{ env.IMAGE_TAG }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -24,16 +24,17 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Get Timestamp
-        id: timestamp
         run: |
-          echo "IMAGE_TAG=$(date +'%Y%m%d-%H%M%S')" >> $GITHUB_ENV
-          echo "::set-output name=image_tag::$TIMESTAMP"
+          TIMESTAMP=$(date +'%Y%m%d-%H%M%S')
+          echo "IMAGE_TAG=$TIMESTAMP" >> $GITHUB_ENV
+          echo "IMAGE_TAG=$TIMESTAMP" >> $GITHUB_OUTPUT  # NEW: Store for next job
           echo "Generated IMAGE_TAG: $TIMESTAMP"
+
 
       - name: Debug IMAGE_TAG
         run: |
           echo "IMAGE_TAG (env): $IMAGE_TAG"
-          echo "IMAGE_TAG (output): ${{ steps.timestamp.outputs.image_tag }}"
+          echo "IMAGE_TAG (output): ${{ env.IMAGE_TAG }}"
 
       - name: Build & Push Docker Image
         uses: docker/build-push-action@v4
@@ -46,6 +47,8 @@ jobs:
   deploy-to-minikube:
     runs-on: self-hosted  # Runs on local machine
     needs: build-and-push
+    env:
+      IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
     steps:
       - name: Check if Minikube is Running
         run: |
