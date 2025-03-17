@@ -21,13 +21,18 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image_tag: ${{ env.IMAGE_TAG }}
-      env_name: ${{ github.event.inputs.DEPLOY_ENV }}
+      env_name: ${{ env.ENV_NAME }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set Environment
-        run: echo "ENV_NAME=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
+        run: |
+          if [[ -z "${{ github.event.inputs.DEPLOY_ENV }}" ]]; then
+            echo "ENV_NAME=dev" >> $GITHUB_ENV
+          else
+            echo "ENV_NAME=${{ github.event.inputs.DEPLOY_ENV }}" >> $GITHUB_ENV
+          fi
 
       - name: Get Timestamp for Image Tag
         run: echo "IMAGE_TAG=$(date +'%Y%m%d-%H%M%S')" >> "$GITHUB_ENV"
@@ -61,8 +66,8 @@ jobs:
           minikube status | grep -q 'Running' || minikube start --driver=hyperkit
           minikube addons enable ingress || true
 
-      - name: Pull Docker Image into Minikube
-        run: minikube image pull ${{ secrets.DOCKER_USERNAME }}/my_docker_image:$IMAGE_TAG
+      - name: Load Docker Image into Minikube
+        run: minikube image load ${{ secrets.DOCKER_USERNAME }}/my_docker_image:$IMAGE_TAG
 
       - name: Deploy to Kubernetes
         run: |
@@ -82,7 +87,7 @@ jobs:
               newTag: $IMAGE_TAG
           EOF
 
-          kubectl get ns $ENV_NAME || kubectl create ns $ENV_NAME
+          kubectl get ns $ENV_NAME || kubectl create ns $ENV_NAME || true
           kubectl kustomize $K8S_PATH | kubectl apply -f -
           rm -f $K8S_PATH/kustomization.yaml  # Cleanup
 
@@ -92,6 +97,7 @@ jobs:
           sleep 10
           for i in {1..20}; do
             INGRESS_HOST=$(kubectl get ingress $ENV_NAME-api-ingress -n $ENV_NAME -o jsonpath='{.spec.rules[0].host}' 2>/dev/null)
+            echo "Attempt $i: Found Ingress Host: $INGRESS_HOST"
             if [[ -n "$INGRESS_HOST" ]]; then
               echo "APP_URL=http://$INGRESS_HOST" >> $GITHUB_ENV
               exit 0
